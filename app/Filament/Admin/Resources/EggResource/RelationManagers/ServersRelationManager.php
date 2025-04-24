@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Filament\Admin\Resources\EggResource\RelationManagers;
+
+use App\Models\Server;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\SelectColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+
+class ServersRelationManager extends RelationManager
+{
+    protected static string $relationship = 'servers';
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->recordTitleAttribute('servers')
+            ->emptyStateDescription(trans('admin/egg.no_servers'))
+            ->emptyStateHeading(trans('admin/egg.no_servers_help'))
+            ->searchable(false)
+            ->heading(trans('admin/egg.servers'))
+            ->columns([
+                TextColumn::make('user.username')
+                    ->label('Owner')
+                    ->icon('tabler-user')
+                    ->url(fn (Server $server): string => route('filament.admin.resources.users.edit', ['record' => $server->user]))
+                    ->sortable(),
+                TextColumn::make('name')
+                    ->label(trans('admin/server.name'))
+                    ->icon('tabler-brand-docker')
+                    ->url(fn (Server $server): string => route('filament.admin.resources.servers.edit', ['record' => $server]))
+                    ->sortable(),
+                TextColumn::make('node.name')
+                    ->icon('tabler-server-2')
+                    ->url(fn (Server $server): string => route('filament.admin.resources.nodes.edit', ['record' => $server->node])),
+                TextColumn::make('image')
+                    ->label(trans('admin/server.docker_image')),
+                SelectColumn::make('allocation.id')
+                    ->label(trans('admin/server.primary_allocation'))
+                    ->options(fn (Server $server) => [$server->allocation->id => $server->allocation->address])
+                    ->selectablePlaceholder(false)
+                    ->sortable(),
+            ]);
+    }
+}
